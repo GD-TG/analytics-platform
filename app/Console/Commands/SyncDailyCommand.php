@@ -18,7 +18,7 @@ class SyncDailyCommand extends Command
         $this->info('Starting daily sync...');
         
         $syncPeriod = DateHelper::getDailySyncPeriod();
-        $projects = Project::with(['counters', 'campaigns'])->active()->get();
+        $projects = Project::with(['counters', 'directAccounts'])->active()->get();
 
         $this->info("Sync period: {$syncPeriod['start']->format('Y-m-d')} to {$syncPeriod['end']->format('Y-m-d')}");
         $this->info("Found {$projects->count()} active projects");
@@ -31,8 +31,8 @@ class SyncDailyCommand extends Command
             }
 
             // Синхронизация Яндекс.Директа
-            foreach ($project->campaigns as $campaign) {
-                FetchDirectJob::dispatch($campaign, $syncPeriod['start'], $syncPeriod['end'])
+            foreach ($project->directAccounts as $directAccount) {
+                FetchDirectJob::dispatch($directAccount, $syncPeriod['start'], $syncPeriod['end'])
                     ->onQueue('high-priority');
             }
         }

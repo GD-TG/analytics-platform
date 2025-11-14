@@ -1,0 +1,159 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header__menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+
+.header__menu-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header__logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #e53935;
+  color: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.header__logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.header__center {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 32px;
+}
+
+.header__search {
+  position: relative;
+  width: 100%;
+}
+
+.header__search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 40px 0 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f5f5f5;
+  transition: all 0.2s;
+}
+
+.header__search-input:focus {
+  outline: none;
+  border-color: #e53935;
+  background: #ffffff;
+}
+
+.header__search-input::placeholder {
+  color: #9e9e9e;
+}
+
+.header__search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9e9e9e;
+  pointer-events: none;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header__time {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.header__username {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.header__notifications {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e53935;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+
+.header__notifications:hover {
+  background-color: #f5f5f5;
+}
+
