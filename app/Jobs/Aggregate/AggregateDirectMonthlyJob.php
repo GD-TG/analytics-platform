@@ -3,8 +3,7 @@
 namespace App\Jobs\Aggregate;
 
 use App\Models\Project;
-use App\Models\MonthlyDirect;
-use App\Models\Campaign;
+use App\Models\DirectCampaignMonthly;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -46,7 +45,7 @@ class AggregateDirectMonthlyJob implements ShouldQueue
             $campaignsData = $this->getAggregatedCampaignsData($startDate, $endDate);
             
             // Создаем или обновляем запись MonthlyDirect
-            $monthlyDirect = MonthlyDirect::updateOrCreate(
+            $monthlyDirect = DirectCampaignMonthly::updateOrCreate(
                 [
                     'project_id' => $this->project->id,
                     'month' => $month,
@@ -73,7 +72,7 @@ class AggregateDirectMonthlyJob implements ShouldQueue
      */
     private function getAggregatedCampaignsData($startDate, $endDate): array
     {
-        return Campaign::where('project_id', $this->project->id)
+        return DirectCampaignMonthly::where('project_id', $this->project->id)
             ->whereHas('dailyData', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
             })
@@ -90,7 +89,7 @@ class AggregateDirectMonthlyJob implements ShouldQueue
     /**
      * Агрегировать данные по одной кампании
      */
-    private function aggregateCampaignData(Campaign $campaign): array
+    private function aggregateCampaignData(DirectCampaignMonthly $campaign): array
     {
         $dailyData = $campaign->dailyData;
 
@@ -130,7 +129,7 @@ class AggregateDirectMonthlyJob implements ShouldQueue
     /**
      * Расчет ROI для кампании
      */
-    private function calculateROI(float $cost, int $conversions, Campaign $campaign): float
+    private function calculateROI(float $cost, int $conversions, DirectCampaignMonthly $campaign): float
     {
         // Здесь должна быть логика расчета ROI на основе данных о доходах
         // Пока используем упрощенный расчет
@@ -241,10 +240,10 @@ class AggregateDirectMonthlyJob implements ShouldQueue
     /**
      * Обновление месячных данных кампан
      */
-    private function updateCampaignsMonthlyData(MonthlyDirect $monthlyDirect, array $campaignsData): void
+    private function updateCampaignsMonthlyData(DirectCampaignMonthly $monthlyDirect, array $campaignsData): void
     {
         foreach ($campaignsData as $campaignData) {
-            $campaign = Campaign::find($campaignData['campaign_id']);
+            $campaign = DirectCampaignMonthly::find($campaignData['campaign_id']);
             
             if ($campaign) {
                 $campaign->monthlyData()->updateOrCreate(
