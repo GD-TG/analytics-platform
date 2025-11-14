@@ -22,7 +22,7 @@ body {
 }
 
 .app__main {
-  margin-left: 240px;
+  margin-left: 64px;
   margin-top: 64px;
   flex: 1;
   transition: margin-left 0.3s ease;
@@ -37,6 +37,17 @@ body {
 /* Когда сайдбар раскрыт */
 .sidebar--expanded ~ .app__main {
   margin-left: 240px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .app__main {
+    margin-left: 0;
+  }
+
+  .sidebar--expanded ~ .app__main {
+    margin-left: 0;
+  }
 }
 
 /* Убираем скроллбар для красоты */

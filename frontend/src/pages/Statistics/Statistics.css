@@ -76,6 +76,76 @@
   font-weight: 600;
   color: #333;
   border-bottom: 2px solid #e0e0e0;
+  position: relative;
+}
+
+/* Цветовая индикация месяцев */
+.statistics__month--green {
+  background-color: #e8f5e9;
+  border-left: 3px solid #4caf50;
+}
+
+.statistics__month--yellow {
+  background-color: #fff9c4;
+  border-left: 3px solid #ffc107;
+}
+
+.statistics__month--red {
+  background-color: #ffebee;
+  border-left: 3px solid #e53935;
+}
+
+.statistics__table td.statistics__month--green,
+.statistics__table td.statistics__month--yellow,
+.statistics__table td.statistics__month--red {
+  padding-left: 13px;
+  position: relative;
+  cursor: help;
+}
+
+/* Hover-сравнение метрик */
+.statistics__table td[data-hover] {
+  position: relative;
+}
+
+.statistics__table td[data-hover]:hover::after {
+  content: attr(data-hover);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: pre-line;
+  z-index: 1000;
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 5px;
+  pointer-events: none;
+}
+
+.statistics__table td[data-hover]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #333;
+  z-index: 1001;
+  margin-bottom: -5px;
+  pointer-events: none;
+}
+
+.statistics__loading {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+  color: #666;
 }
 
 .statistics__table td {
@@ -99,3 +169,21 @@
   font-weight: 500;
 }
 
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .statistics {
+    padding: 16px;
+  }
+
+  .statistics__table-container {
+    overflow-x: auto;
+  }
+
+  .statistics__table {
+    min-width: 600px;
+  }
+
+  .statistics__summary {
+    grid-template-columns: 1fr;
+  }
+}

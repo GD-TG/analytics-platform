@@ -3,368 +3,455 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\MonthlyMetrika;
-use App\Models\MonthlyDirect;
-use App\Models\MonthlySeo;
-use App\Services\Insights\InsightsGenerator;
+use App\Models\MetricsMonthly;
+use App\Models\MetricsAgeMonthly;
+use App\Models\DirectTotalsMonthly;
+use App\Models\DirectCampaignMonthly;
+use App\Models\SeoQueriesMonthly;
 use App\Helpers\PeriodHelper;
+use App\Helpers\MathHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
 
-class ReportController extends Controller
+class ReportController
 {
     /**
-     * @var InsightsGenerator
+     * Получить отчет для проекта (формат как в ТЗ)
      */
-    private $insightsGenerator;
-
-    public function __construct(InsightsGenerator $insightsGenerator)
+    public function getReport(Request $request, $id): JsonResponse
     {
-        $this->insightsGenerator = $insightsGenerator;
-    }
-
-    /**
-     * Получить месячный отчет для проекта
-     */
-    public function getMonthlyReport(Request $request, Project $project): JsonResponse
-    {
-        $request->validate([
-            'period' => 'sometimes|string|in:M,M-1,M-2',
-            'include_insights' => 'sometimes|boolean',
-            'include_comparison' => 'sometimes|boolean',
-        ]);
-
-        $period = $request->get('period', 'M');
-        $includeInsights = $request->get('include_insights', true);
-        $includeComparison = $request->get('include_comparison', true);
-
         try {
-            $periodData = PeriodHelper::getPeriodByKey($period);
+            $project = Project::findOrFail($id);
             
-            // Получаем данные из всех источников
-            $metrikaData = $this->getMetrikaData($project, $periodData);
-            $directData = $this->getDirectData($project, $periodData);
-            $seoData = $this->getSeoData($project, $periodData);
-            $ageData = $this->getAgeData($project, $periodData);
-
-            // Формируем основной отчет
+            // Получаем периоды M, M-1, M-2
+            $periods = PeriodHelper::getReportPeriods();
+            $periodKeys = ['M', 'M-1', 'M-2'];
+            
             $report = [
-                'project' => $project->only(['id', 'name', 'status']),
-                'period' => $periodData,
-                'metrics' => $this->combineMetrics($metrikaData, $directData, $seoData),
-                'sources' => [
-                    'metrika' => $metrikaData,
-                    'direct' => $directData,
-                    'seo' => $seoData,
+                'projectid' => $project->id,
+                'periods' => array_map(function($key) use ($periods) {
+                    return $periods[$key]['start']->format('Y-m');
+                }, $periodKeys),
+                'metrika' => [
+                    'summary' => [],
+                    'age' => [],
                 ],
-                'demographics' => $ageData,
+                'direct' => [
+                    'totals' => [],
+                    'campaigns' => [],
+                ],
+                'seo' => [
+                    'summary' => [],
+                    'queries' => [],
+                ],
             ];
 
-            // Добавляем сравнение с предыдущим периодом
-            if ($includeComparison) {
-                $report['comparison'] = $this->getComparisonData($project, $period);
+            // Собираем данные по Метрике
+            foreach ($periodKeys as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                $metrics = MetricsMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->first();
+                
+                if ($metrics) {
+                    $report['metrika']['summary'][] = [
+                        'month' => $period['start']->format('Y-m'),
+                        'visits' => $metrics->visits ?? 0,
+                        'users' => $metrics->users ?? 0,
+                        'bounce' => (float)($metrics->bounce_rate ?? 0),
+                        'avgSec' => $metrics->avg_session_duration_sec ?? 0,
+                        'conv' => $metrics->conversions ?? 0,
+                    ];
+                }
+
+                // Возрастные данные
+                $ageData = MetricsAgeMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->get();
+                
+                foreach ($ageData as $age) {
+                    $report['metrika']['age'][] = [
+                        'month' => $period['start']->format('Y-m'),
+                        'age' => $age->age_group,
+                        'visits' => $age->visits ?? 0,
+                        'users' => $age->users ?? 0,
+                        'bounce' => (float)($age->bounce_rate ?? 0),
+                        'avgSec' => $age->avg_session_duration_sec ?? 0,
+                    ];
+                }
             }
 
-            // Добавляем инсайты
-            if ($includeInsights) {
-                $report['insights'] = $this->insightsGenerator->generateForProject($project, $periodData);
+            // Собираем данные по Директу
+            foreach ($periodKeys as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                $totals = DirectTotalsMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->first();
+                
+                if ($totals) {
+                    $report['direct']['totals'][] = [
+                        'month' => $period['start']->format('Y-m'),
+                        'impressions' => $totals->impressions ?? 0,
+                        'clicks' => $totals->clicks ?? 0,
+                        'ctr' => (float)($totals->ctr_pct ?? 0),
+                        'cpc' => (float)($totals->cpc ?? 0),
+                        'conv' => $totals->conversions ?? 0,
+                        'cpa' => (float)($totals->cpa ?? 0),
+                        'cost' => (float)($totals->cost ?? 0),
+                    ];
+                }
+
+                // Данные по кампаниям
+                $campaigns = DirectCampaignMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->get();
+                
+                foreach ($campaigns as $campaign) {
+                    $directCampaign = \App\Models\DirectCampaign::find($campaign->direct_campaign_id);
+                    $report['direct']['campaigns'][] = [
+                        'campaignId' => $directCampaign->campaign_id ?? 0,
+                        'rows' => [[
+                            'month' => $period['start']->format('Y-m'),
+                            'impressions' => $campaign->impressions ?? 0,
+                            'clicks' => $campaign->clicks ?? 0,
+                            'ctr' => (float)($campaign->ctr_pct ?? 0),
+                            'cpc' => (float)($campaign->cpc ?? 0),
+                            'conv' => $campaign->conversions ?? 0,
+                            'cpa' => (float)($campaign->cpa ?? 0),
+                            'cost' => (float)($campaign->cost ?? 0),
+                        ]],
+                    ];
+                }
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $report,
-            ]);
+            // SEO данные
+            foreach ($periodKeys as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                $seoQueries = SeoQueriesMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->get();
+                
+                if ($seoQueries->count() > 0) {
+                    $report['seo']['summary'][] = [
+                        'month' => $period['start']->format('Y-m'),
+                        'visitors' => $seoQueries->sum('visitors') ?? 0,
+                        'conv' => $seoQueries->sum('conversions') ?? 0,
+                    ];
+                    
+                    foreach ($seoQueries as $query) {
+                        $report['seo']['queries'][] = [
+                            'month' => $period['start']->format('Y-m'),
+                            'query' => $query->query ?? '',
+                            'position' => $query->position ?? 0,
+                            'url' => $query->url ?? '',
+                        ];
+                    }
+                }
+            }
+
+            return response()->json($report);
 
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate report',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Получить обзор по всем проектам
+     * Получить список проектов с термометром
      */
-    public function getOverview(Request $request): JsonResponse
+    public function getProjectsWithThermometer(Request $request): JsonResponse
     {
-        $request->validate([
-            'period' => 'sometimes|string|in:M,M-1,M-2',
-        ]);
-
-        $period = $request->get('period', 'M');
-        $periodData = PeriodHelper::getPeriodByKey($period);
-
-        $projects = Project::active()->get();
-        
-        $overview = [
-            'period' => $periodData,
-            'total_projects' => $projects->count(),
-            'summary' => [
-                'total_visits' => 0,
-                'total_conversions' => 0,
-                'total_cost' => 0,
-                'total_revenue' => 0,
-            ],
-            'projects' => [],
-        ];
-
-        foreach ($projects as $project) {
-            $projectData = $this->getProjectOverviewData($project, $periodData);
-            $overview['projects'][] = $projectData;
-            
-            // Суммируем общие метрики
-            $overview['summary']['total_visits'] += $projectData['metrics']['visits'] ?? 0;
-            $overview['summary']['total_conversions'] += $projectData['metrics']['conversions'] ?? 0;
-            $overview['summary']['total_cost'] += $projectData['metrics']['cost'] ?? 0;
-            $overview['summary']['total_revenue'] += $projectData['metrics']['revenue'] ?? 0;
-        }
-
-        // Расчет общих KPI
-        $overview['summary']['conversion_rate'] = MathHelper::calculateConversionRate(
-            $overview['summary']['total_conversions'],
-            $overview['summary']['total_visits']
-        );
-        $overview['summary']['roi'] = MathHelper::calculateROI(
-            $overview['summary']['total_revenue'],
-            $overview['summary']['total_cost']
-        );
-
-        return response()->json([
-            'success' => true,
-            'data' => $overview,
-        ]);
-    }
-
-    /**
-     * Получить инсайты по всем проектам
-     */
-    public function getInsights(Request $request): JsonResponse
-    {
-        $request->validate([
-            'period' => 'sometimes|string|in:M,M-1,M-2',
-            'type' => 'sometimes|string|in:anomalies,trends,recommendations',
-        ]);
-
-        $period = $request->get('period', 'M');
-        $type = $request->get('type', 'anomalies');
-
-        $periodData = PeriodHelper::getPeriodByKey($period);
-        $projects = Project::active()->get();
-
-        $insights = [
-            'period' => $periodData,
-            'type' => $type,
-            'insights' => [],
-        ];
-
-        foreach ($projects as $project) {
-            $projectInsights = $this->insightsGenerator->generateForProject($project, $periodData);
-            
-            if (!empty($projectInsights[$type])) {
-                $insights['insights'][] = [
-                    'project' => $project->only(['id', 'name']),
-                    'data' => $projectInsights[$type],
-                ];
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $insights,
-        ]);
-    }
-
-    /**
-     * Получить доступные периоды для отчетов
-     */
-    public function getAvailablePeriods(Project $project): JsonResponse
-    {
-        $periods = PeriodHelper::getReportPeriods();
-        $availablePeriods = [];
-
-        foreach ($periods as $periodKey => $periodData) {
-            // Проверяем, есть ли данные для этого периода
-            $hasData = MonthlyMetrika::where('project_id', $project->id)
-                ->where('month', $periodData['start']->format('Y-m'))
-                ->exists();
-
-            $availablePeriods[$periodKey] = [
-                'period' => $periodData,
-                'has_data' => $hasData,
-                'is_aggregatable' => PeriodHelper::isAggregatablePeriod($periodData['end']),
-            ];
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $availablePeriods,
-        ]);
-    }
-
-    /**
-     * Перегенерировать отчет для проекта
-     */
-    public function regenerateReport(Request $request, Project $project): JsonResponse
-    {
-        $request->validate([
-            'period' => 'required|string|in:M,M-1,M-2',
-        ]);
-
-        $period = $request->get('period');
-        $periodData = PeriodHelper::getPeriodByKey($period);
-
         try {
-            // Здесь будет логика перегенерации отчета
-            // Пока просто возвращаем успех
+            $projects = Project::active()->get();
+            $periods = PeriodHelper::getReportPeriods();
+            
+            $result = [];
+            
+            foreach ($projects as $project) {
+                // Получаем данные за текущий и предыдущий месяц
+                $currentPeriod = $periods['M'];
+                $previousPeriod = $periods['M-1'];
+                
+                $currentMetrics = MetricsMonthly::where('project_id', $project->id)
+                    ->where('year', $currentPeriod['start']->year)
+                    ->where('month', $currentPeriod['start']->month)
+                    ->first();
+                
+                $previousMetrics = MetricsMonthly::where('project_id', $project->id)
+                    ->where('year', $previousPeriod['start']->year)
+                    ->where('month', $previousPeriod['start']->month)
+                    ->first();
+                
+                // Рассчитываем статус термометра
+                $thermometer = $this->calculateThermometer($currentMetrics, $previousMetrics);
+                
+                $result[] = [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'thermometer' => $thermometer,
+                ];
+            }
             
             return response()->json([
                 'success' => true,
-                'message' => 'Report regeneration started',
-                'data' => [
-                    'project_id' => $project->id,
-                    'period' => $periodData,
-                    'regenerated_at' => now()->toISOString(),
-                ]
+                'data' => $result,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to regenerate report',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Получить данные Яндекс.Метрики для отчета
+     * Рассчитать статус термометра для проекта
+     * 🔥 Проект растёт
+     * 🌤 Стабильно
+     * ❄ Есть падения
      */
-    private function getMetrikaData(Project $project, array $periodData): array
+    private function calculateThermometer($current, $previous): string
     {
-        return MonthlyMetrika::where('project_id', $project->id)
-            ->where('month', $periodData['start']->format('Y-m'))
-            ->first()
-            ?->toArray() ?? [];
-    }
-
-    /**
-     * Получить данные Яндекс.Директа для отчета
-     */
-    private function getDirectData(Project $project, array $periodData): array
-    {
-        return MonthlyDirect::where('project_id', $project->id)
-            ->where('month', $periodData['start']->format('Y-m'))
-            ->first()
-            ?->toArray() ?? [];
-    }
-
-    /**
-     * Получить SEO данные для отчета
-     */
-    private function getSeoData(Project $project, array $periodData): array
-    {
-        return MonthlySeo::where('project_id', $project->id)
-            ->where('month', $periodData['start']->format('Y-m'))
-            ->first()
-            ?->toArray() ?? [];
-    }
-
-    /**
-     * Получить возрастные данные для отчета
-     */
-    private function getAgeData(Project $project, array $periodData): array
-    {
-        return $project->monthlyAgeGroups()
-            ->where('month', $periodData['start']->format('Y-m'))
-            ->get()
-            ->toArray();
-    }
-
-    /**
-     * Комбинирование метрик из разных источников
-     */
-    private function combineMetrics(array $metrikaData, array $directData, array $seoData): array
-    {
-        return [
-            'visits' => $metrikaData['visits'] ?? 0,
-            'users' => $metrikaData['users'] ?? 0,
-            'page_views' => $metrikaData['page_views'] ?? 0,
-            'bounce_rate' => $metrikaData['bounce_rate'] ?? 0,
-            'avg_session_duration' => $metrikaData['avg_session_duration'] ?? 0,
-            'conversions' => $metrikaData['conversions'] ?? 0,
-            'conversion_rate' => $metrikaData['conversion_rate'] ?? 0,
-            'cost' => $directData['cost'] ?? 0,
-            'clicks' => $directData['clicks'] ?? 0,
-            'impressions' => $directData['impressions'] ?? 0,
-            'ctr' => $directData['ctr'] ?? 0,
-            'cpc' => $directData['cpc'] ?? 0,
-            'cpa' => $directData['cpa'] ?? 0,
-            'roi' => $directData['roi'] ?? 0,
-            'organic_traffic' => $seoData['organic_traffic'] ?? 0,
-            'keywords' => $seoData['keywords'] ?? 0,
-            'avg_position' => $seoData['avg_position'] ?? 0,
-        ];
-    }
-
-    /**
-     * Получить данные для сравнения с предыдущим периодом
-     */
-    private function getComparisonData(Project $project, string $currentPeriod): array
-    {
-        $comparisonPeriods = PeriodHelper::getComparisonPeriods($currentPeriod);
+        if (!$current || !$previous) {
+            return '🌤'; // Стабильно, если нет данных
+        }
         
-        $currentData = $this->getCombinedProjectData($project, $comparisonPeriods['current']);
-        $previousData = $this->getCombinedProjectData($project, $comparisonPeriods['previous']);
-
-        $comparison = [];
-        $metrics = ['visits', 'conversions', 'cost', 'revenue', 'conversion_rate', 'roi'];
-
-        foreach ($metrics as $metric) {
-            if (isset($currentData[$metric]) && isset($previousData[$metric])) {
-                $comparison[$metric] = [
-                    'current' => $currentData[$metric],
-                    'previous' => $previousData[$metric],
-                    'absolute_change' => $currentData[$metric] - $previousData[$metric],
-                    'percentage_change' => MathHelper::calculateGrowthRate(
-                        $currentData[$metric],
-                        $previousData[$metric]
-                    ),
-                ];
+        $keyMetrics = [
+            'visits' => $current->visits ?? 0,
+            'users' => $current->users ?? 0,
+            'conversions' => $current->conversions ?? 0,
+        ];
+        
+        $previousMetrics = [
+            'visits' => $previous->visits ?? 0,
+            'users' => $previous->users ?? 0,
+            'conversions' => $previous->conversions ?? 0,
+        ];
+        
+        $growthCount = 0;
+        $declineCount = 0;
+        $stableCount = 0;
+        
+        foreach ($keyMetrics as $key => $value) {
+            $prevValue = $previousMetrics[$key] ?? 0;
+            
+            if ($prevValue == 0) {
+                if ($value > 0) {
+                    $growthCount++;
+                } else {
+                    $stableCount++;
+                }
+                continue;
+            }
+            
+            $change = (($value - $prevValue) / $prevValue) * 100;
+            
+            if ($change > 5) {
+                $growthCount++;
+            } elseif ($change < -5) {
+                $declineCount++;
+            } else {
+                $stableCount++;
             }
         }
-
-        return $comparison;
-    }
-
-    /**
-     * Получить комбинированные данные проекта для периода
-     */
-    private function getCombinedProjectData(Project $project, array $periodData): array
-    {
-        $metrikaData = $this->getMetrikaData($project, $periodData);
-        $directData = $this->getDirectData($project, $periodData);
         
-        return $this->combineMetrics($metrikaData, $directData, []);
+        // 🔥 Проект растёт - если большинство метрик растут
+        if ($growthCount > $declineCount && $growthCount > $stableCount) {
+            return '🔥';
+        }
+        
+        // ❄ Есть падения - если большинство метрик падают
+        if ($declineCount > $growthCount && $declineCount > $stableCount) {
+            return '❄';
+        }
+        
+        // 🌤 Стабильно - во всех остальных случаях
+        return '🌤';
     }
 
     /**
-     * Получить обзорные данные проекта
+     * Получить статистику для страницы Statistics
      */
-    private function getProjectOverviewData(Project $project, array $periodData): array
+    public function getStatistics(Request $request, $id = null): JsonResponse
     {
-        $metrics = $this->getCombinedProjectData($project, $periodData);
+        try {
+            $projectId = $id ?? $request->get('project_id', 1);
+            $project = Project::findOrFail($projectId);
+            
+            $periods = PeriodHelper::getReportPeriods();
+            $metrics = [];
+            
+            // Получаем данные за 3 месяца
+            foreach (['M', 'M-1', 'M-2'] as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                $data = MetricsMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->first();
+                
+                if ($data) {
+                    $metrics[] = [
+                        'month' => $period['start']->format('Y-m'),
+                        'month_label' => $period['start']->translatedFormat('F Y'),
+                        'visits' => $data->visits ?? 0,
+                        'users' => $data->users ?? 0,
+                        'bounce_rate' => (float)($data->bounce_rate ?? 0),
+                        'avg_duration' => $data->avg_session_duration_sec ?? 0,
+                        'conversions' => $data->conversions ?? 0,
+                    ];
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $metrics,
+            ]);
 
-        return [
-            'project' => $project->only(['id', 'name', 'status']),
-            'metrics' => $metrics,
-            'kpi' => [
-                'conversion_rate' => $metrics['conversion_rate'] ?? 0,
-                'roi' => $metrics['roi'] ?? 0,
-                'cpa' => $metrics['cpa'] ?? 0,
-            ],
-        ];
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Получить данные визитов для графика
+     */
+    public function getVisits(Request $request, $id = null): JsonResponse
+    {
+        try {
+            $projectId = $id ?? $request->get('project_id', 1);
+            $project = Project::findOrFail($projectId);
+            
+            // Получаем данные за последние 31 день
+            $startDate = Carbon::now()->subDays(31);
+            $endDate = Carbon::now();
+            
+            // Здесь нужно будет получать дневные данные, пока возвращаем месячные
+            $data = [];
+            
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Получить источники трафика
+     */
+    public function getSources(Request $request, $id = null): JsonResponse
+    {
+        try {
+            $projectId = $id ?? $request->get('project_id', 1);
+            $project = Project::findOrFail($projectId);
+            
+            $periods = PeriodHelper::getReportPeriods();
+            $sources = [];
+            
+            foreach (['M', 'M-1'] as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                // Здесь нужно получать данные по источникам из Метрики
+                // Пока возвращаем структуру
+                $sources[] = [
+                    'month' => $period['start']->format('Y-m'),
+                    'month_label' => $period['start']->translatedFormat('F Y'),
+                    'sources' => [],
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $sources,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Получить возрастные данные
+     */
+    public function getAgeData(Request $request, $id = null): JsonResponse
+    {
+        try {
+            $projectId = $id ?? $request->get('project_id', 1);
+            $project = Project::findOrFail($projectId);
+            
+            $periods = PeriodHelper::getReportPeriods();
+            $ageData = [];
+            
+            foreach (['M', 'M-1'] as $key) {
+                $period = $periods[$key];
+                $year = $period['start']->year;
+                $month = $period['start']->month;
+                
+                $data = MetricsAgeMonthly::where('project_id', $project->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->get();
+                
+                $ageData[] = [
+                    'month' => $period['start']->format('Y-m'),
+                    'month_label' => $period['start']->translatedFormat('F Y'),
+                    'data' => $data->map(function($item) {
+                        return [
+                            'age_group' => $item->age_group,
+                            'visits' => $item->visits ?? 0,
+                            'users' => $item->users ?? 0,
+                            'bounce_rate' => (float)($item->bounce_rate ?? 0),
+                            'avg_duration' => $item->avg_session_duration_sec ?? 0,
+                            'views' => 0, // Нужно добавить в модель
+                        ];
+                    })->toArray(),
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $ageData,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

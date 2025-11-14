@@ -130,10 +130,91 @@ const SettingsIcon = () => (
   </svg>
 );
 
+// Иконки для подменю
+const FolderIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+  </svg>
+);
+
+const ListIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="8" y1="6" x2="21" y2="6"></line>
+    <line x1="8" y1="12" x2="21" y2="12"></line>
+    <line x1="8" y1="18" x2="21" y2="18"></line>
+    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+  </svg>
+);
+
+const PieChartIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
+const WrenchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+  </svg>
+);
+
 const Sidebar = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Структура подменю для каждого пункта
+  const subMenus = {
+    'tasks': [
+      { label: 'Проекты', icon: FolderIcon, path: '/tasks/projects' },
+      { label: 'Задачи', icon: TasksIcon, path: '/tasks/tasks' },
+      { label: 'Шаблоны', icon: DocumentsIcon, path: '/tasks/templates' },
+    ],
+    'resources': [
+      { label: 'Товары', icon: PurchasesIcon, path: '/resources/products' },
+      { label: 'Склад', icon: ProductionIcon, path: '/resources/warehouse' },
+    ],
+    'finance': [
+      { label: 'Поступления', icon: FinanceIcon, path: '/finance/income' },
+      { label: 'Отделы', icon: UsersIcon, path: '/finance/departments' },
+      { label: 'Оплата', icon: FinanceIcon, path: '/finance/payment' },
+      { label: 'Расходы', icon: ResourcesIcon, path: '/finance/expenses' },
+      { label: 'К выплате', icon: FinanceIcon, path: '/finance/payable' },
+      { label: 'Счета', icon: DocumentsIcon, path: '/finance/accounts' },
+    ],
+    'innovation': [
+      { label: 'Патенты', icon: DocumentsIcon, path: '/innovation/patents' },
+      { label: 'Разработки', icon: InnovationIcon, path: '/innovation/developments' },
+    ],
+    'production': [
+      { label: 'Процессы', icon: WrenchIcon, path: '/production/processes' },
+      { label: 'Товар', icon: PurchasesIcon, path: '/production/products' },
+      { label: 'Услуга', icon: TasksIcon, path: '/production/services' },
+    ],
+    'marketing': [
+      { label: 'Кампании', icon: UsersIcon, path: '/marketing/campaigns' },
+      { label: 'Инструменты', icon: WrenchIcon, path: '/marketing/tools' },
+      { label: 'Сегменты', icon: PieChartIcon, path: '/marketing/segments' },
+    ],
+    'settings': [
+      { label: 'Списки', icon: ListIcon, path: '/settings/lists' },
+      { label: 'Роли', icon: UsersIcon, path: '/settings/roles' },
+      { label: 'Стадии', icon: WrenchIcon, path: '/settings/stages' },
+    ],
+  };
 
   const menuItems = [
     { id: 'statistics', label: 'Статистика', icon: StatisticsIcon, path: '/statistics' },
@@ -141,14 +222,14 @@ const Sidebar = () => {
     { id: 'sources', label: 'Источники', icon: SourcesIcon, path: '/sources' },
     { id: 'age-lead', label: 'Возраст/Лид', icon: AgeLeadIcon, path: '/age-lead' },
     { id: 'purchases', label: 'Закупки', icon: PurchasesIcon, path: '/purchases' },
-    { id: 'tasks', label: 'Задачи и проекты', icon: TasksIcon, path: '/tasks' },
-    { id: 'resources', label: 'Ресурсы', icon: ResourcesIcon, path: '/resources' },
-    { id: 'finance', label: 'Финансы', icon: FinanceIcon, path: '/finance' },
+    { id: 'tasks', label: 'Задачи и проекты', icon: TasksIcon, path: '/tasks', hasSubmenu: true },
+    { id: 'resources', label: 'Ресурсы', icon: ResourcesIcon, path: '/resources', hasSubmenu: true },
+    { id: 'finance', label: 'Финансы', icon: FinanceIcon, path: '/finance', hasSubmenu: true },
     { id: 'logistics', label: 'Логистика', icon: LogisticsIcon, path: '/logistics' },
-    { id: 'innovation', label: 'Инноватика', icon: InnovationIcon, path: '/innovation' },
-    { id: 'production', label: 'Производство', icon: ProductionIcon, path: '/production' },
+    { id: 'innovation', label: 'Инноватика', icon: InnovationIcon, path: '/innovation', hasSubmenu: true },
+    { id: 'production', label: 'Производство', icon: ProductionIcon, path: '/production', hasSubmenu: true },
     { id: 'company', label: 'Компания', icon: CompanyIcon, path: '/company' },
-    { id: 'marketing', label: 'Маркетинг', icon: MarketingIcon, path: '/marketing' },
+    { id: 'marketing', label: 'Маркетинг', icon: MarketingIcon, path: '/marketing', hasSubmenu: true },
     { id: 'documents', label: 'Документы', icon: DocumentsIcon, path: '/documents' },
     { id: 'processes', label: 'Процессы', icon: ProcessesIcon, path: '/processes' },
   ];
@@ -157,20 +238,38 @@ const Sidebar = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  return (
-    <aside className={`sidebar ${isExpanded ? 'sidebar--expanded' : 'sidebar--collapsed'}`}>
-      <div className="sidebar__header">
-        {isExpanded && (
-          <div className="sidebar__header-text">Раскрытый сайдбар</div>
-        )}
-      </div>
+  const handleMouseEnter = (itemId) => {
+    setIsExpanded(true);
+    if (subMenus[itemId]) {
+      setHoveredItem(itemId);
+    }
+  };
 
+  const handleMouseLeave = () => {
+    setIsExpanded(false);
+    setHoveredItem(null);
+  };
+
+  return (
+    <aside 
+      className={`sidebar ${isExpanded ? 'sidebar--expanded' : 'sidebar--collapsed'}`}
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={handleMouseLeave}
+    >
       <nav className="sidebar__nav">
         <ul className="sidebar__menu">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
+            const hasSubmenu = subMenus[item.id];
+            const isHovered = hoveredItem === item.id;
+            
             return (
-              <li key={item.id} className="sidebar__menu-item">
+              <li 
+                key={item.id} 
+                className="sidebar__menu-item"
+                onMouseEnter={() => hasSubmenu && setHoveredItem(item.id)}
+                onMouseLeave={() => hasSubmenu && setHoveredItem(null)}
+              >
                 <button
                   className={`sidebar__menu-link ${isActive(item.path) ? 'sidebar__menu-link--active' : ''}`}
                   onClick={() => navigate(item.path)}
@@ -183,6 +282,27 @@ const Sidebar = () => {
                     <span className="sidebar__menu-label">{item.label}</span>
                   )}
                 </button>
+                
+                {/* Подменю */}
+                {hasSubmenu && isHovered && isExpanded && (
+                  <div className="sidebar__submenu">
+                    {subMenus[item.id].map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <button
+                          key={subItem.path}
+                          className={`sidebar__submenu-item ${isActive(subItem.path) ? 'sidebar__submenu-item--active' : ''}`}
+                          onClick={() => navigate(subItem.path)}
+                        >
+                          <span className="sidebar__submenu-icon">
+                            <SubIcon />
+                          </span>
+                          <span className="sidebar__submenu-label">{subItem.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </li>
             );
           })}
@@ -192,16 +312,43 @@ const Sidebar = () => {
       <div className="sidebar__divider"></div>
 
       <div className="sidebar__footer">
-        <button
-          className="sidebar__settings"
-          onClick={() => navigate('/settings')}
-          title={!isExpanded ? 'Настройки' : ''}
+        <div
+          className="sidebar__menu-item"
+          onMouseEnter={() => setHoveredItem('settings')}
+          onMouseLeave={() => setHoveredItem(null)}
         >
-          <span className="sidebar__settings-icon">
-            <SettingsIcon />
-          </span>
-          {isExpanded && <span className="sidebar__settings-label">Настройки</span>}
-        </button>
+          <button
+            className={`sidebar__settings ${isActive('/settings') ? 'sidebar__settings--active' : ''}`}
+            onClick={() => navigate('/settings')}
+            title={!isExpanded ? 'Настройки' : ''}
+          >
+            <span className="sidebar__settings-icon">
+              <SettingsIcon />
+            </span>
+            {isExpanded && <span className="sidebar__settings-label">Настройки</span>}
+          </button>
+          
+          {/* Подменю для настроек */}
+          {hoveredItem === 'settings' && isExpanded && subMenus.settings && (
+            <div className="sidebar__submenu">
+              {subMenus.settings.map((subItem) => {
+                const SubIcon = subItem.icon;
+                return (
+                  <button
+                    key={subItem.path}
+                    className={`sidebar__submenu-item ${isActive(subItem.path) ? 'sidebar__submenu-item--active' : ''}`}
+                    onClick={() => navigate(subItem.path)}
+                  >
+                    <span className="sidebar__submenu-icon">
+                      <SubIcon />
+                    </span>
+                    <span className="sidebar__submenu-label">{subItem.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   );

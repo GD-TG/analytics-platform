@@ -157,3 +157,26 @@
   background-color: #f5f5f5;
 }
 
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 16px;
+  }
+
+  .header__center {
+    display: none;
+  }
+
+  .header__time {
+    display: none;
+  }
+
+  .header__username {
+    display: none;
+  }
+
+  .header__right {
+    gap: 12px;
+  }
+}
+

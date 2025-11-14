@@ -19,13 +19,13 @@ function App() {
           <Sidebar />
           <main className="app__main">
             <Routes>
-              <Route path="/" element={<Navigate to="/statistics" replace />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/visits" element={<Visits />} />
               <Route path="/sources" element={<Sources />} />
               <Route path="/age-lead" element={<AgeLead />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="*" element={<Navigate to="/statistics" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>
