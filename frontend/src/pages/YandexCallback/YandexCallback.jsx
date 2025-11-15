@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authApi } from '../../api/auth';
+import { yandexApi } from '../../api/yandex';
 import './YandexCallback.css';
 
 const YandexCallback = () => {
@@ -30,20 +30,21 @@ const YandexCallback = () => {
         // Получаем сохраненный redirect_uri
         const redirectUri = sessionStorage.getItem('yandex_redirect_uri') || `${window.location.origin}/auth/yandex/callback`;
 
-        // Обмениваем код на токен и авторизуем пользователя
-        const response = await authApi.yandexAuth(code, redirectUri);
+        // Обмениваем код на токен (создается YandexAccount на сервере)
+        const response = await yandexApi.exchangeCode(code, redirectUri);
 
-        if (response.success) {
-          localStorage.setItem('token', response.data.token);
-          const userData = {
-            ...response.data.user,
-            firstName: response.data.user.first_name || response.data.user.firstName,
-            lastName: response.data.user.last_name || response.data.user.lastName,
-          };
-          localStorage.setItem('user', JSON.stringify(userData));
+        if (response && response.success) {
+          const accountId = response.data && (response.data.account_id || response.data.accountId || response.data.id) || response.account_id;
+          // Получаем список счетчиков для аккаунта
+          const countersResp = await yandexApi.listCounters(accountId);
+          const counters = countersResp && countersResp.data ? countersResp.data.counters || countersResp.data : countersResp;
+
+          // Сохраняем counters в state and show selection (simple flow: store in session and navigate to selection)
+          sessionStorage.setItem('yandex_counters_' + accountId, JSON.stringify(counters));
+          sessionStorage.setItem('yandex_account_id', accountId);
           sessionStorage.removeItem('yandex_redirect_uri');
-          // Используем window.location для полной перезагрузки и применения UserContext
-          window.location.href = '/dashboard';
+          // Перенаправляем на страницу выбора счетчиков
+          window.location.href = `/yandex/select?account_id=${accountId}`;
         } else {
           setError(response.message || 'Ошибка при авторизации');
           setLoading(false);

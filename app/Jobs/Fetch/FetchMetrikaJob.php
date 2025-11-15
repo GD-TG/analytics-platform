@@ -14,6 +14,7 @@ use App\Services\Metrika\MetrikaClient;
 use App\Services\Metrika\MetrikaFetcher;
 use App\Jobs\Process\ParseMetrikaResponseJob;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class FetchMetrikaJob implements ShouldQueue
 {
@@ -42,7 +43,7 @@ class FetchMetrikaJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(MetrikaClient $metrikaClient, MetrikaFetcher $metrikaFetcher): void
+    public function handle(MetrikaClient $metrikaClient, MetrikaFetcher $metrikaFetcher, \App\Services\Yandex\YandexTokenService $tokenService): void
     {
         try {
             Log::info("Starting Metrika fetch for counter {$this->counter->counter_id}", [
@@ -50,6 +51,24 @@ class FetchMetrikaJob implements ShouldQueue
                 'project_id' => $this->counter->project_id,
                 'period' => $this->startDate->format('Y-m-d') . ' to ' . $this->endDate->format('Y-m-d')
             ]);
+
+            // Подготавливаем Authorization заголовок: ищем YandexAccount по counter_id
+            $account = \App\Models\YandexAccount::where('counter_id', $this->counter->counter_id)->first();
+            $accessToken = null;
+            if ($account) {
+                $accessToken = $tokenService->getAccessTokenFor($account);
+            }
+
+            // fallback к глобальному токену из конфига
+            if (!$accessToken) {
+                $accessToken = Config::get('integrations.yandex.oauth_token') ?: Config::get('metrika.api_token');
+            }
+
+            if ($accessToken) {
+                $metrikaClient->setHeaders(['Authorization' => 'OAuth ' . $accessToken]);
+            } else {
+                Log::warning('No Yandex access token available for counter ' . $this->counter->counter_id);
+            }
 
             // Получаем данные визитов и сессий
             $visitsData = $metrikaFetcher->fetchVisitsData(
@@ -84,8 +103,8 @@ class FetchMetrikaJob implements ShouldQueue
                 ],
                 'request_params' => [
                     'counter_id' => $this->counter->counter_id,
-                    'start_date' => $this->startDate->toISOString(),
-                    'end_date' => $this->endDate->toISOString()
+                    'start_date' => $this->startDate->toIso8601String(),
+                    'end_date' => $this->endDate->toIso8601String()
                 ]
             ]);
 

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi } from '../../api/auth';
 import './Register.css';
 
 const Register = () => {
@@ -33,54 +32,39 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await authApi.register({
+      // Работаем локально: сохраняем пользователя в local_users
+      const usersRaw = localStorage.getItem('local_users');
+      const users = usersRaw ? JSON.parse(usersRaw) : [];
+
+      // Проверяем, не зарегистрирован ли уже пользователь с таким email
+      const exists = users.some(u => u.email === email);
+      if (exists) {
+        setError('Пользователь с таким email уже зарегистрирован.');
+        return;
+      }
+
+      const newUser = {
+        id: Date.now(),
         name,
         email,
         password,
-        password_confirmation: passwordConfirmation,
-      });
-      
-      if (response.success) {
-        localStorage.setItem('token', response.data.token);
-        const userData = {
-          ...response.data.user,
-          firstName: response.data.user.first_name || response.data.user.firstName,
-          lastName: response.data.user.last_name || response.data.user.lastName,
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-        navigate('/dashboard');
-      }
+      };
+
+      users.push(newUser);
+      localStorage.setItem('local_users', JSON.stringify(users));
+
+      // Сохраняем токен и публичную информацию о пользователе
+      const token = Date.now().toString(36) + Math.random().toString(36).slice(2);
+      const publicUser = { id: newUser.id, name: newUser.name, email: newUser.email, firstName: newUser.name };
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(publicUser));
+
+      navigate('/dashboard');
     } catch (err) {
       const errorMessage = err.message || 'Ошибка регистрации. Попробуйте снова.';
       setError(errorMessage);
       console.error('Register error:', err);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleYandexAuth = async () => {
-    try {
-      setError('');
-      setLoading(true);
-      
-      const redirectUri = `${window.location.origin}/auth/yandex/callback`;
-      const response = await authApi.getYandexAuthUrl(redirectUri);
-      
-      if (response.success && response.data.auth_url) {
-        sessionStorage.setItem('yandex_redirect_uri', redirectUri);
-        window.location.href = response.data.auth_url;
-      }
-    } catch (err) {
-      let errorMessage = err.message || 'Ошибка при регистрации через Yandex';
-      
-      // Более понятное сообщение об ошибке
-      if (errorMessage.includes('Не удалось подключиться') || errorMessage.includes('Failed to fetch')) {
-        errorMessage = 'Backend сервер не запущен. Запустите backend командой: php artisan serve или start-backend.bat';
-      }
-      
-      setError(errorMessage);
-      console.error('Yandex auth error:', err);
       setLoading(false);
     }
   };
@@ -161,22 +145,6 @@ const Register = () => {
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
         </form>
-
-        <div className="register__divider">
-          <span>или</span>
-        </div>
-
-        <button
-          type="button"
-          className="register__yandex-button"
-          onClick={handleYandexAuth}
-          disabled={loading}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-          </svg>
-          <span>Зарегистрироваться через Yandex</span>
-        </button>
 
         <div className="register__footer">
           <p>

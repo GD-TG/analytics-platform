@@ -5,7 +5,7 @@ const UserContext = createContext();
 const defaultUser = {
   id: null,
   firstName: 'Айдар',
-  lastName: 'Нигматуллин',
+  lastName: '',
   email: '',
   avatar: 'А',
   role: 'user'

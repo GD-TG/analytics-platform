@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,10 +23,18 @@ class User extends Authenticatable
         'avatar',
         'role',
         'is_active',
+        'yandex_metrika_client_id',
+        'yandex_metrika_client_secret',
+        'yandex_direct_client_id',
+        'yandex_direct_client_secret',
+        'sync_interval_minutes',
+        'sync_enabled',
+        'encrypted_password',
     ];
 
     protected $hidden = [
         'password',
+        'encrypted_password',
         'remember_token',
     ];
 
@@ -44,4 +54,3 @@ class User extends Authenticatable
         return $this->role === 'viewer';
     }
 }
-

@@ -1,24 +1,27 @@
-<?php 
-namespace App\Models; 
- 
-use Illuminate\Database\Eloquent\Model; 
-use Illuminate\Database\Eloquent\Relations\BelongsTo; 
- 
-class Goal extends Model 
-{ 
-    protected $table = 'goals'; 
- 
-    protected $fillable = [ 
-        'counter_id', 'goal_id', 'name', 'is_conversion' 
-    ]; 
- 
-    protected $casts = [ 
-        'goal_id' => 'integer', 
-        'is_conversion' => 'boolean', 
-    ]; 
- 
-    public function yandexCounter(): BelongsTo 
-    { 
-        return $this->belongsTo(YandexCounter::class); 
-    } 
-} 
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Goal extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'project_id',
+        'name',
+        'external_id',
+        'config',
+    ];
+
+    protected $casts = [
+        'config' => 'array',
+    ];
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+}

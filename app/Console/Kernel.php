@@ -22,6 +22,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Синхронизация данных каждый час (configurable via SYNC_INTERVAL_MINUTES)
+        $syncInterval = env('SYNC_INTERVAL_MINUTES', 60);
+        $schedule->command('analytics:sync')
+                 ->everyMinutes($syncInterval)
+                 ->timezone('Europe/Moscow')
+                 ->withoutOverlapping()
+                 ->onOneServer()
+                 ->appendOutputTo(storage_path('logs/sync.log'));
+
         // Ежедневная синхронизация данных в 03:00 ночи
         $schedule->command('analytics:sync-daily')
                  ->dailyAt('03:00')

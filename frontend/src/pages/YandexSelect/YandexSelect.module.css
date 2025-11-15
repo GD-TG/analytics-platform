@@ -1,0 +1,268 @@
+/* YandexSelect.css - Beautiful styling for counter selection */
+
+.yandex-select-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.yandex-select-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.yandex-select-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.yandex-select-header h1 {
+  font-size: 32px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.yandex-select-header p {
+  font-size: 16px;
+  opacity: 0.95;
+  margin: 0;
+  font-weight: 400;
+}
+
+.yandex-select-content {
+  padding: 40px;
+}
+
+/* Loading state */
+.yandex-select-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 300px;
+}
+
+.yandex-select-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-right-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.yandex-select-loading-text {
+  font-size: 16px;
+  color: #667eea;
+  font-weight: 500;
+}
+
+/* Error state */
+.yandex-select-error {
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 8px;
+  padding: 16px;
+  color: #d32f2f;
+  font-size: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yandex-select-error::before {
+  content: '⚠️';
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* Counter list */
+.yandex-select-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+
+.yandex-select-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.yandex-select-item:hover {
+  background: #f0f0f0;
+  border-color: #667eea;
+  transform: translateX(4px);
+}
+
+.yandex-select-item.selected {
+  background: #e8eaf6;
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.yandex-select-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+  flex-shrink: 0;
+}
+
+.yandex-select-label {
+  flex: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.yandex-select-label-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 4px 0;
+  display: block;
+}
+
+.yandex-select-label-info {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  display: block;
+}
+
+/* Empty state */
+.yandex-select-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.yandex-select-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.yandex-select-empty-text {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Selection info */
+.yandex-select-info {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #2e7d32;
+  display: none;
+}
+
+.yandex-select-info.show {
+  display: block;
+}
+
+.yandex-select-info strong {
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+/* Action buttons */
+.yandex-select-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  margin-top: 20px;
+}
+
+.yandex-select-button {
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.yandex-select-button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.yandex-select-button-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.yandex-select-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.yandex-select-button-secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.yandex-select-button-secondary:hover {
+  background: #e8e8e8;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .yandex-select-page {
+    padding: 20px;
+  }
+
+  .yandex-select-header {
+    padding: 30px 20px;
+  }
+
+  .yandex-select-header h1 {
+    font-size: 24px;
+  }
+
+  .yandex-select-content {
+    padding: 20px;
+  }
+
+  .yandex-select-actions {
+    flex-direction: column;
+  }
+
+  .yandex-select-button {
+    width: 100%;
+    min-width: auto;
+  }
+}

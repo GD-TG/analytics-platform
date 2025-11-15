@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authApi } from '../../api/auth';
 import './Login.css';
 
 const Login = () => {
@@ -25,51 +24,33 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authApi.login({ email, password });
-      
-      if (response.success) {
-        localStorage.setItem('token', response.data.token);
-        const userData = {
-          ...response.data.user,
-          firstName: response.data.user.first_name || response.data.user.firstName,
-          lastName: response.data.user.last_name || response.data.user.lastName,
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-        navigate('/dashboard');
+      // Локальная проверка пользователя в localStorage (без backend)
+      const usersRaw = localStorage.getItem('local_users');
+      const users = usersRaw ? JSON.parse(usersRaw) : [];
+
+      const found = users.find(u => u.email === email && u.password === password);
+
+      if (!found) {
+        setError('Неправильный email или пароль.');
+        return;
       }
+
+      // Генерируем простой токен и сохраняем публичную часть пользователя
+      const token = Date.now().toString(36) + Math.random().toString(36).slice(2);
+      const publicUser = {
+        id: found.id,
+        name: found.name,
+        email: found.email,
+        firstName: found.name,
+      };
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(publicUser));
+      navigate('/dashboard');
     } catch (err) {
       const errorMessage = err.message || 'Ошибка входа. Проверьте данные.';
       setError(errorMessage);
       console.error('Login error:', err);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleYandexAuth = async () => {
-    try {
-      setError('');
-      setLoading(true);
-      
-      const redirectUri = `${window.location.origin}/auth/yandex/callback`;
-      const response = await authApi.getYandexAuthUrl(redirectUri);
-      
-      if (response.success && response.data.auth_url) {
-        // Сохраняем redirect_uri для callback
-        sessionStorage.setItem('yandex_redirect_uri', redirectUri);
-        // Перенаправляем на Yandex OAuth
-        window.location.href = response.data.auth_url;
-      }
-    } catch (err) {
-      let errorMessage = err.message || 'Ошибка при авторизации через Yandex';
-      
-      // Более понятное сообщение об ошибке
-      if (errorMessage.includes('Не удалось подключиться') || errorMessage.includes('Failed to fetch')) {
-        errorMessage = 'Backend сервер не запущен. Запустите backend командой: php artisan serve или start-backend.bat';
-      }
-      
-      setError(errorMessage);
-      console.error('Yandex auth error:', err);
       setLoading(false);
     }
   };
@@ -126,28 +107,15 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="login__divider">
-          <span>или</span>
-        </div>
-
-        <button
-          type="button"
-          className="login__yandex-button"
-          onClick={handleYandexAuth}
-          disabled={loading}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-          </svg>
-          <span>Войти через Yandex</span>
-        </button>
-
         <div className="login__footer">
           <p>
             Нет аккаунта?{' '}
             <Link to="/register" className="login__link">
               Зарегистрироваться
             </Link>
+          </p>
+          <p style={{marginTop:8}}>
+            Или подключить Yandex для отчётов: <a href="#" onClick={async (e)=>{e.preventDefault(); const redirectUri = `${window.location.origin}/auth/yandex/callback`; try { const resp = await (await import('../../api/yandex')).yandexApi.getAuthUrl(redirectUri); const url = resp.auth_url || (resp.data && resp.data.auth_url) || (resp.data && resp.data.data && resp.data.data.auth_url) || (resp.data && resp.data.auth_url); if (url) { sessionStorage.setItem('yandex_redirect_uri', redirectUri); window.location.href = url; } else { alert('Не удалось получить URL авторизации'); } } catch(err){ console.error(err); alert('Ошибка при запросе URL авторизации'); } }}>Подключить Yandex</a>
           </p>
         </div>
       </div>

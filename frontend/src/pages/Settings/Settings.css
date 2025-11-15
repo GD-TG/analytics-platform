@@ -1,7 +1,12 @@
 .settings {
   padding: 24px;
   background: #f0f2f5;
-  min-height: calc(100vh - 64px);
+}
+
+.settings__container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
 }
 
 .settings__header {

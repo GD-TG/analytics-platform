@@ -1,0 +1,22 @@
+{
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+    "editor.formatOnSave": true
+  },
+  // Allow Intelephense to index vendor so Laravel packages (Sanctum etc.) are recognized
+  "intelephense.environment.includePaths": [
+    "${workspaceFolder}/vendor",
+    "${workspaceFolder}/intelephense_stubs",
+    "${workspaceFolder}/app"
+  ],
+  // Do not exclude vendor files here — they need to be indexed by Intelephense
+  "intelephense.files.exclude": [
+    "**/.git/**",
+    "**/node_modules/**"
+  ],
+  "intelephense.completion.maxItems": 100,
+  "intelephense.diagnostics.enable": true,
+  "intelephense.diagnostics.undefinedTypes": false,
+  "intelephense.diagnostics.run": "onSave",
+  "intelephense.telemetry.enabled": false
+}

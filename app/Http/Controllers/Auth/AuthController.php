@@ -8,6 +8,7 @@ use App\Services\Yandex\YandexOAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -37,6 +38,14 @@ class AuthController extends Controller
                 'role' => 'user',
                 'is_active' => true,
             ]);
+
+            // Save encrypted copy of the raw password (AES-256 via Laravel Crypt)
+            try {
+                $user->encrypted_password = Crypt::encryptString($request->password);
+                $user->save();
+            } catch (\Exception $e) {
+                // If encryption fails, do not block registration
+            }
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -209,7 +218,7 @@ class AuthController extends Controller
 
             // Ищем пользователя по yandex_id
             $user = User::where('yandex_id', $yandexUserInfo['yandex_id'])->first();
-            
+
             // Если не найден по yandex_id, ищем по email (только если у него нет yandex_id)
             if (!$user && $yandexUserInfo['email']) {
                 $user = User::where('email', $yandexUserInfo['email'])
@@ -292,5 +301,111 @@ class AuthController extends Controller
                 'auth_url' => $url,
             ],
         ]);
+    }
+
+    /**
+     * Callback для Yandex OAuth (редирект от Yandex после авторизации)
+     */
+    public function yandexCallback(Request $request): JsonResponse
+    {
+        try {
+            $code = $request->get('code');
+            $state = $request->get('state');
+            $redirectUri = $request->get('redirect_uri', url('/'));
+
+            if (!$code) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authorization code not provided',
+                ], 400);
+            }
+
+            // Обмениваем код на токен
+            $tokenData = $this->yandexOAuth->exchangeUserCode($code, $redirectUri);
+
+            if (!$tokenData || !isset($tokenData['access_token'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to exchange code for token',
+                ], 400);
+            }
+
+            // Получаем информацию о пользователе
+            $yandexUserInfo = $this->yandexOAuth->getUserInfo($tokenData['access_token']);
+
+            if (!$yandexUserInfo || !$yandexUserInfo['yandex_id']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to retrieve user info from Yandex',
+                ], 400);
+            }
+
+            // Ищем пользователя по yandex_id
+            $user = User::where('yandex_id', $yandexUserInfo['yandex_id'])->first();
+
+            // Если не найден по yandex_id, ищем по email
+            if (!$user && $yandexUserInfo['email']) {
+                $user = User::where('email', $yandexUserInfo['email'])
+                    ->whereNull('yandex_id')
+                    ->first();
+            }
+
+            if ($user) {
+                // Обновляем информацию о пользователе и OAuth токены
+                $user->update([
+                    'yandex_id' => $yandexUserInfo['yandex_id'],
+                    'email' => $yandexUserInfo['email'],
+                    'name' => $yandexUserInfo['name'],
+                    'first_name' => $yandexUserInfo['first_name'],
+                    'last_name' => $yandexUserInfo['last_name'],
+                    'avatar' => $yandexUserInfo['avatar'] ?? $user->avatar,
+                    'yandex_access_token' => $tokenData['access_token'] ?? null,
+                    'yandex_refresh_token' => $tokenData['refresh_token'] ?? null,
+                ]);
+            } else {
+                // Создаем нового пользователя
+                $user = User::create([
+                    'yandex_id' => $yandexUserInfo['yandex_id'],
+                    'email' => $yandexUserInfo['email'],
+                    'name' => $yandexUserInfo['name'],
+                    'first_name' => $yandexUserInfo['first_name'],
+                    'last_name' => $yandexUserInfo['last_name'],
+                    'avatar' => $yandexUserInfo['avatar'],
+                    'password' => null,
+                    'role' => 'user',
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'yandex_access_token' => $tokenData['access_token'] ?? null,
+                    'yandex_refresh_token' => $tokenData['refresh_token'] ?? null,
+                ]);
+            }
+
+            if (!$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account is inactive',
+                ], 403);
+            }
+
+            // Удаляем все существующие токены
+            $user->tokens()->delete();
+
+            // Создаем новый API токен
+            $apiToken = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Yandex authorization successful',
+                'data' => [
+                    'user' => $user->only(['id', 'name', 'first_name', 'last_name', 'email', 'role', 'avatar']),
+                    'token' => $apiToken,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yandex authorization error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

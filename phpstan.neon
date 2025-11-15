@@ -1,0 +1,14 @@
+includes:
+  - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+  level: 5
+  paths:
+    - app
+    - routes
+    - tests
+  checkMissingIterableValueType: false
+  reportUnmatchedIgnoredErrors: false
+  ignoreErrors:
+    - "#Undefined variable: \\$this#"
+    - "#Access to an undefined property#"

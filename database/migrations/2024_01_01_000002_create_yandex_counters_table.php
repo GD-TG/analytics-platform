@@ -12,7 +12,9 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained()->onDelete('cascade'); 
             $table->bigInteger('counter_id'); 
             $table->string('name')->nullable(); 
-            $table->boolean('is_primary')->default(false); 
+            $table->boolean('is_primary')->default(false);
+            $table->boolean('active')->default(true)->index();
+            $table->timestamp('last_fetched_at')->nullable()->index();
             $table->timestamps(); 
         }); 
     } 

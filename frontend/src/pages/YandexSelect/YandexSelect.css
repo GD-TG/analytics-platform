@@ -1,0 +1,205 @@
+/* YandexSelect.css - Styling for counter selection page */
+
+.yandex-select-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.yandex-select-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.yandex-select-header h1 {
+  font-size: 28px;
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+
+.yandex-select-header p {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Loading State */
+.yandex-select-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.yandex-select-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.yandex-select-loading-text {
+  margin-left: 15px;
+  font-size: 16px;
+}
+
+/* Error State */
+.yandex-select-error {
+  background: rgba(220, 53, 69, 0.9);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.yandex-select-error-icon {
+  margin-right: 8px;
+}
+
+/* Counter List */
+.yandex-select-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+
+.yandex-select-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.yandex-select-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.yandex-select-item.selected {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.yandex-select-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+  cursor: pointer;
+  accent-color: white;
+}
+
+.yandex-select-label {
+  flex: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.yandex-select-label-name {
+  font-weight: 500;
+  font-size: 15px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.yandex-select-label-info {
+  font-size: 12px;
+  opacity: 0.8;
+  display: block;
+}
+
+/* Buttons */
+.yandex-select-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.yandex-select-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.yandex-select-button-primary {
+  background: white;
+  color: #667eea;
+}
+
+.yandex-select-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.yandex-select-button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.yandex-select-button-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.yandex-select-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Empty State */
+.yandex-select-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.yandex-select-empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.yandex-select-empty-text {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .yandex-select-container {
+    margin: 20px;
+    padding: 15px;
+  }
+
+  .yandex-select-header h1 {
+    font-size: 22px;
+  }
+
+  .yandex-select-actions {
+    flex-direction: column;
+  }
+
+  .yandex-select-button {
+    width: 100%;
+  }
+}
