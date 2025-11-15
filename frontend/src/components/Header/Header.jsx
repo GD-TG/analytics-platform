@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../../contexts/UserContext';
+import Notifications from '../Notifications/Notifications';
 import './Header.css';
 
 const Header = () => {
@@ -55,16 +56,13 @@ const Header = () => {
         <div className="header__time">{currentTime}</div>
         <div className="header__user">
           <div className="header__avatar">
-            <span>{user.firstName?.[0]}{user.lastName?.[0]}</span>
+            <span>{(user.firstName || user.first_name || user.name?.[0] || 'U')?.[0]}{(user.lastName || user.last_name || '')?.[0] || ''}</span>
           </div>
-          <span className="header__username">{user.firstName} {user.lastName}</span>
+          <span className="header__username">
+            {user.firstName || user.first_name || user.name || 'User'} {user.lastName || user.last_name || ''}
+          </span>
         </div>
-        <button className="header__notifications" aria-label="Уведомления">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-        </button>
+        <Notifications />
       </div>
     </header>
   );

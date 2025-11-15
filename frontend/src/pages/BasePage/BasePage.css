@@ -1,0 +1,112 @@
+.base-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: calc(100vh - 64px);
+}
+
+.base-page__header {
+  margin-bottom: 24px;
+}
+
+.base-page__title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.base-page__subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.base-page__content {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.base-page__loading,
+.base-page__empty,
+.base-page__error {
+  padding: 60px 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.base-page__loading {
+  font-size: 16px;
+  color: #666;
+}
+
+.base-page__empty p {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.base-page__empty-hint {
+  font-size: 14px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.base-page__error p {
+  font-size: 16px;
+  color: #e53935;
+  margin: 0 0 16px 0;
+}
+
+.base-page__retry-btn {
+  padding: 10px 20px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.base-page__retry-btn:hover {
+  background: #c62828;
+}
+
+.base-page__default-content {
+  padding: 20px;
+  color: #666;
+}
+
+/* Темная тема */
+[data-theme="dark"] .base-page {
+  background: #1a1a1a;
+}
+
+[data-theme="dark"] .base-page__title {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .base-page__subtitle {
+  color: #999;
+}
+
+[data-theme="dark"] .base-page__content,
+[data-theme="dark"] .base-page__loading,
+[data-theme="dark"] .base-page__empty,
+[data-theme="dark"] .base-page__error {
+  background: #2a2a2a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .base-page__empty p {
+  color: #ccc;
+}
+
+[data-theme="dark"] .base-page__default-content {
+  color: #ccc;
+}
+

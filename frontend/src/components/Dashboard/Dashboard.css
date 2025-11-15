@@ -102,6 +102,26 @@
   color: #666;
 }
 
+.dashboard__empty {
+  padding: 60px 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard__empty p {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.dashboard__empty-hint {
+  font-size: 14px;
+  color: #999;
+  margin-top: 8px;
+}
+
 /* Адаптивность для мобильных */
 @media (max-width: 768px) {
   .dashboard {

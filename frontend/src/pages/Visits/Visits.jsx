@@ -1,23 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { reportsApi } from '../../api/reports';
 import './Visits.css';
 
 const Visits = () => {
   const [viewMode, setViewMode] = useState('chart');
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleLines, setVisibleLines] = useState({
+    directNetworks: true,
+    directSearch: true,
+    googleSearch: true,
+    directEntries: true,
+    yandexSearch: true,
+  });
 
-  // Данные для графика
-  const data = [];
-  const daysInMonth = 31;
-  for (let i = 1; i <= daysInMonth; i++) {
-    data.push({
-      date: `${String(i).padStart(2, '0')}.10.25`,
-      directNetworks: Math.floor(Math.random() * 150) + 50,
-      directSearch: Math.floor(Math.random() * 100) + 30,
-      googleSearch: Math.floor(Math.random() * 80) + 20,
-      directEntries: Math.floor(Math.random() * 60) + 15,
-      yandexSearch: Math.floor(Math.random() * 70) + 20,
-    });
-  }
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const response = await reportsApi.getVisits();
+      
+      if (response.success && response.data) {
+        setData(response.data);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      console.error('Failed to load visits:', error);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const lines = [
     { key: 'directNetworks', name: 'Переходы по рекламе — Яндекс.Директ — Сети', color: '#4caf50' },
@@ -27,17 +45,33 @@ const Visits = () => {
     { key: 'yandexSearch', name: 'Переходы из поисковых систем — Яндекс — Не определено', color: '#9c27b0' },
   ];
 
-  const [visibleLines, setVisibleLines] = useState({
-    directNetworks: true,
-    directSearch: true,
-    googleSearch: true,
-    directEntries: true,
-    yandexSearch: true,
-  });
-
   const toggleLine = (key) => {
     setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) {
+    return (
+      <div className="visits">
+        <div className="visits__loading">Загрузка данных...</div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="visits">
+        <div className="visits__header">
+          <h1 className="visits__title">WEB-аналитика / Визиты</h1>
+        </div>
+        <div className="visits__empty">
+          <p>Нет данных для отображения</p>
+          <p className="visits__empty-hint">
+            Убедитесь, что OAuth токен настроен и выполнена синхронизация данных
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="visits">
@@ -83,7 +117,7 @@ const Visits = () => {
                 </svg>
               </button>
               <div className="visits__dropdown">
-                <span>6/6</span>
+                <span>{lines.length}/{lines.length}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
@@ -104,7 +138,6 @@ const Visits = () => {
                   <YAxis 
                     stroke="#666"
                     style={{ fontSize: '12px' }}
-                    domain={[0, 175]}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -148,7 +181,7 @@ const Visits = () => {
                     <tr key={index}>
                       <td>{row.date}</td>
                       {lines.map(line => (
-                        <td key={line.key}>{row[line.key]}</td>
+                        <td key={line.key}>{row[line.key] || 0}</td>
                       ))}
                     </tr>
                   ))}
@@ -185,4 +218,3 @@ const Visits = () => {
 };
 
 export default Visits;
-

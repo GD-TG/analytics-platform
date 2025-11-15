@@ -17,15 +17,12 @@ const Dashboard = () => {
       
       if (response.success && response.data) {
         setProjects(response.data);
+      } else {
+        setProjects([]);
       }
     } catch (error) {
       console.error('Failed to load projects:', error);
-      // Fallback на тестовые данные
-      setProjects([
-        { id: 1, name: 'Проект 1', thermometer: '🔥' },
-        { id: 2, name: 'Проект 2', thermometer: '🌤' },
-        { id: 3, name: 'Проект 3', thermometer: '❄' },
-      ]);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -61,6 +58,23 @@ const Dashboard = () => {
     return (
       <div className="dashboard">
         <div className="dashboard__loading">Загрузка проектов...</div>
+      </div>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="dashboard">
+        <div className="dashboard__header">
+          <h1 className="dashboard__title">Аналитический термометр</h1>
+          <p className="dashboard__subtitle">Статус проектов на основе ключевых метрик</p>
+        </div>
+        <div className="dashboard__empty">
+          <p>Нет проектов для отображения</p>
+          <p className="dashboard__empty-hint">
+            Убедитесь, что в базе данных есть активные проекты и выполнена синхронизация данных
+          </p>
+        </div>
       </div>
     );
   }

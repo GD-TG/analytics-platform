@@ -34,6 +34,13 @@ Route::get('/dashboard', function () {
     return 'Analytics Dashboard';
 })->name('dashboard');
 
+// Health check (публичный маршрут, без middleware)
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()], 200, [
+        'Content-Type' => 'application/json',
+    ]);
+})->withoutMiddleware(['web']);
+
 // Fallback маршрут
 Route::fallback(function () {
     return response()->json(['error' => 'Route not found'], 404);

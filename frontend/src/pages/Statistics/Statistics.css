@@ -6,6 +6,9 @@
 
 .statistics__header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .statistics__title {
@@ -146,6 +149,50 @@
   text-align: center;
   font-size: 16px;
   color: #666;
+}
+
+.statistics__empty {
+  padding: 60px 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statistics__empty p {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.statistics__empty-hint {
+  font-size: 14px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.statistics__export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.statistics__export-btn:hover:not(:disabled) {
+  background: #c62828;
+}
+
+.statistics__export-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .statistics__table td {

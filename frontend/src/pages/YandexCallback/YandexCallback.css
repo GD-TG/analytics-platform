@@ -1,0 +1,120 @@
+.yandex-callback {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.yandex-callback__container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  text-align: center;
+}
+
+.yandex-callback__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.yandex-callback__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #FC3F1D;
+  border-right: 4px solid #FC3F1D;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.yandex-callback__loading p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.yandex-callback__error,
+.yandex-callback__success {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.yandex-callback__success::before {
+  content: '✓';
+  width: 64px;
+  height: 64px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.yandex-callback__error h2,
+.yandex-callback__success h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.yandex-callback__error h2 {
+  color: #e53935;
+}
+
+.yandex-callback__success h2 {
+  color: #4caf50;
+}
+
+.yandex-callback__error p,
+.yandex-callback__success p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.yandex-callback__button {
+  padding: 12px 24px;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 8px;
+}
+
+.yandex-callback__button:hover {
+  background: #c62828;
+}
+

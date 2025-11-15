@@ -169,6 +169,33 @@
   flex: 1;
 }
 
+.visits__loading {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+}
+
+.visits__empty {
+  padding: 60px 24px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.visits__empty p {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.visits__empty-hint {
+  font-size: 14px;
+  color: #999;
+  margin-top: 8px;
+}
+
 /* Адаптивность для мобильных */
 @media (max-width: 768px) {
   .visits {

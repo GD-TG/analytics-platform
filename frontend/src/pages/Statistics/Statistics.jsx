@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { reportsApi } from '../../api/reports';
+import { generatePDFReport } from '../../utils/pdfGenerator';
 import './Statistics.css';
 
 const Statistics = () => {
@@ -7,6 +8,8 @@ const Statistics = () => {
   const [summaryMetrics, setSummaryMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [monthColors, setMonthColors] = useState({});
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const reportRef = useRef(null);
 
   useEffect(() => {
     loadData();
@@ -17,7 +20,7 @@ const Statistics = () => {
       setLoading(true);
       const response = await reportsApi.getStatistics();
       
-      if (response.success && response.data) {
+      if (response.success && response.data && response.data.length > 0) {
         const data = response.data;
         
         // Формируем метрики для таблицы
@@ -31,12 +34,16 @@ const Statistics = () => {
         // Рассчитываем цвета месяцев
         const colors = calculateMonthColors(data);
         setMonthColors(colors);
+      } else {
+        // Нет данных - показываем пустое состояние
+        setMetrics([]);
+        setSummaryMetrics([]);
       }
     } catch (error) {
       console.error('Failed to load statistics:', error);
-      // Fallback на тестовые данные при ошибке
-      setMetrics(getDefaultMetrics());
-      setSummaryMetrics(getDefaultSummary());
+      // Не показываем тестовые данные - только ошибку
+      setMetrics([]);
+      setSummaryMetrics([]);
     } finally {
       setLoading(false);
     }
@@ -44,7 +51,7 @@ const Statistics = () => {
 
   const formatMetricsData = (data) => {
     if (!data || data.length < 3) {
-      return getDefaultMetrics();
+      return [];
     }
 
     // Сортируем по дате (M, M-1, M-2)
@@ -119,7 +126,7 @@ const Statistics = () => {
 
   const calculateSummaryMetrics = (data) => {
     if (!data || data.length < 2) {
-      return getDefaultSummary();
+      return [];
     }
 
     const [september, october] = data.slice(-2).reverse();
@@ -186,72 +193,6 @@ const Statistics = () => {
     return colors;
   };
 
-  const getDefaultMetrics = () => {
-    return [
-      {
-        id: 1,
-        indicator: 'Посетители, кол-во',
-        october: 3246,
-        september: 3971,
-        august: 3476,
-        efficiency: -18.26,
-        isNegative: true
-      },
-      {
-        id: 2,
-        indicator: 'Новые посетители, кол-во',
-        october: 2958,
-        september: 3642,
-        august: 3134,
-        efficiency: -18.78,
-        isNegative: true
-      },
-      {
-        id: 3,
-        indicator: 'Визиты, кол-во',
-        october: 4208,
-        september: 4906,
-        august: 4356,
-        efficiency: -13.30,
-        isNegative: true
-      },
-      {
-        id: 4,
-        indicator: 'Кол-во отказов, %',
-        october: 28.00,
-        september: 22.78,
-        august: 26.80,
-        efficiency: 25.81,
-        isNegative: false
-      },
-      {
-        id: 5,
-        indicator: 'Время на сайте, сек',
-        october: 162,
-        september: 124,
-        august: 118,
-        efficiency: 21.43,
-        isNegative: false
-      },
-      {
-        id: 6,
-        indicator: 'Всего заявок, кол-во',
-        october: 85,
-        september: 98,
-        august: 81,
-        efficiency: -15.30,
-        isNegative: true
-      },
-    ];
-  };
-
-  const getDefaultSummary = () => {
-    return [
-      { label: 'Трафик', value: 'Упал на 13%', isNegative: true },
-      { label: 'Число конверсий', value: 'Упало на 15%', isNegative: true },
-      { label: 'Количество отказов', value: 'Выросло на 26%', isNegative: false }
-    ];
-  };
 
   const getMonthColorClass = (month) => {
     const color = monthColors[month] || 'yellow';
@@ -273,23 +214,73 @@ const Statistics = () => {
     );
   }
 
+  if (metrics.length === 0) {
+    return (
+      <div className="statistics">
+        <div className="statistics__header">
+          <h1 className="statistics__title">Статистика / Аналитика сайта</h1>
+        </div>
+        <div className="statistics__empty">
+          <p>Нет данных для отображения</p>
+          <p className="statistics__empty-hint">
+            Убедитесь, что OAuth токен настроен и выполнена синхронизация данных
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleExportPDF = async () => {
+    try {
+      setExportingPDF(true);
+      const filename = `statistics-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      await generatePDFReport('statistics-report', filename, {
+        orientation: 'landscape',
+        format: 'a4',
+      });
+    } catch (error) {
+      console.error('Failed to export PDF:', error);
+      const errorMessage = error.message.includes('not installed') 
+        ? 'PDF библиотеки не установлены. Выполните: npm install jspdf html2canvas'
+        : 'Ошибка при экспорте PDF. Попробуйте еще раз.';
+      alert(errorMessage);
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
   return (
-    <div className="statistics">
+    <div className="statistics" id="statistics-report" ref={reportRef}>
       <div className="statistics__header">
         <h1 className="statistics__title">Статистика / Аналитика сайта</h1>
+        <button
+          className="statistics__export-btn"
+          onClick={handleExportPDF}
+          disabled={exportingPDF || metrics.length === 0}
+          title="Экспортировать в PDF"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          {exportingPDF ? 'Экспорт...' : 'Экспорт PDF'}
+        </button>
       </div>
 
       <div className="statistics__content">
-        <div className="statistics__summary">
-          {summaryMetrics.map((metric, index) => (
-            <div key={index} className="statistics__summary-card">
-              <div className="statistics__summary-label">{metric.label}</div>
-              <div className={`statistics__summary-value ${metric.isNegative ? 'statistics__summary-value--negative' : 'statistics__summary-value--positive'}`}>
-                {metric.isNegative ? '↓' : '↑'} {metric.value}
+        {summaryMetrics.length > 0 && (
+          <div className="statistics__summary">
+            {summaryMetrics.map((metric, index) => (
+              <div key={index} className="statistics__summary-card">
+                <div className="statistics__summary-label">{metric.label}</div>
+                <div className={`statistics__summary-value ${metric.isNegative ? 'statistics__summary-value--negative' : 'statistics__summary-value--positive'}`}>
+                  {metric.isNegative ? '↓' : '↑'} {metric.value}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="statistics__table-container">
           <table className="statistics__table">

@@ -25,7 +25,7 @@ body {
   margin-left: 64px;
   margin-top: 64px;
   flex: 1;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   min-height: calc(100vh - 64px);
 }
 
@@ -37,6 +37,16 @@ body {
 /* Когда сайдбар раскрыт */
 .sidebar--expanded ~ .app__main {
   margin-left: 240px;
+}
+
+/* Темная тема */
+[data-theme="dark"] body {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .app__main {
+  background: #1a1a1a;
 }
 
 /* Адаптивность для мобильных */
@@ -66,4 +76,11 @@ body {
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: #999;
+}
+
+/* Стили для страниц авторизации (без Header и Sidebar) */
+.login,
+.register,
+.yandex-callback {
+  min-height: 100vh;
 }
