@@ -2740,3 +2740,37 @@
 #17 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\PlanicaTask\\\\...')
 #18 {main}
 "} 
+[2025-11-15 15:30:30] laravel.EMERGENCY: Unable to create configured logger. Using emergency logger. {"exception":"[object] (InvalidArgumentException(code: 0): Log [] is not defined. at C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php:212)
+[stacktrace]
+#0 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(137): Illuminate\\Log\\LogManager->resolve(NULL, NULL)
+#1 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(124): Illuminate\\Log\\LogManager->get(NULL)
+#2 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(681): Illuminate\\Log\\LogManager->driver()
+#3 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php(317): Illuminate\\Log\\LogManager->error('__VSCODE_LARAVE...', Array)
+#4 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php(278): Illuminate\\Foundation\\Exceptions\\Handler->reportThrowable(Object(Error))
+#5 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(183): Illuminate\\Foundation\\Exceptions\\Handler->report(Object(Error))
+#6 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleException(Object(Error))
+#7 [internal function]: Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(Object(Error))
+#8 {main}
+"} 
+[2025-11-15 15:30:30] laravel.EMERGENCY: Unable to create configured logger. Using emergency logger. {"exception":"[object] (InvalidArgumentException(code: 0): Log [] is not defined. at C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php:212)
+[stacktrace]
+#0 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(137): Illuminate\\Log\\LogManager->resolve(NULL, NULL)
+#1 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(124): Illuminate\\Log\\LogManager->get(NULL)
+#2 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Log\\LogManager.php(681): Illuminate\\Log\\LogManager->driver()
+#3 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php(317): Illuminate\\Log\\LogManager->error('__VSCODE_LARAVE...', Array)
+#4 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php(278): Illuminate\\Foundation\\Exceptions\\Handler->reportThrowable(Object(Error))
+#5 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(183): Illuminate\\Foundation\\Exceptions\\Handler->report(Object(Error))
+#6 C:\\PlanicaTask\\analytics-platform\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleException(Object(Error))
+#7 [internal function]: Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(Object(Error))
+#8 {main}
+"} 
+[2025-11-15 15:30:30] laravel.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: rename(C:\PlanicaTask\analytics-platform\bootstrap\cache\serCDE.tmp,C:\PlanicaTask\analytics-platform\bootstrap\cache\services.php): Отказано в доступе (code: 5) {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: rename(C:\\PlanicaTask\\analytics-platform\\bootstrap\\cache\\serCDE.tmp,C:\\PlanicaTask\\analytics-platform\\bootstrap\\cache\\services.php): Отказано в доступе (code: 5) at C:\\PlanicaTask\\analytics-platform\\vendor\\_laravel_ide\\discover-b2238725d3a9b1f49ec262da9e63ff86.php:33)
+[stacktrace]
+#0 C:\\PlanicaTask\\analytics-platform\\vendor\\_laravel_ide\\discover-b2238725d3a9b1f49ec262da9e63ff86.php(62): LaravelVsCode::startupError(Object(ErrorException))
+#1 {main}
+"} 
+[2025-11-15 15:30:30] laravel.ERROR: __VSCODE_LARAVEL_STARTUP_ERROR__: rename(C:\PlanicaTask\analytics-platform\bootstrap\cache\serCDD.tmp,C:\PlanicaTask\analytics-platform\bootstrap\cache\services.php): Отказано в доступе (code: 5) {"exception":"[object] (Error(code: 0): __VSCODE_LARAVEL_STARTUP_ERROR__: rename(C:\\PlanicaTask\\analytics-platform\\bootstrap\\cache\\serCDD.tmp,C:\\PlanicaTask\\analytics-platform\\bootstrap\\cache\\services.php): Отказано в доступе (code: 5) at C:\\PlanicaTask\\analytics-platform\\vendor\\_laravel_ide\\discover-6fd83ab5fb3f0a7e73c08ddae18f9934.php:33)
+[stacktrace]
+#0 C:\\PlanicaTask\\analytics-platform\\vendor\\_laravel_ide\\discover-6fd83ab5fb3f0a7e73c08ddae18f9934.php(62): LaravelVsCode::startupError(Object(ErrorException))
+#1 {main}
+"} 
